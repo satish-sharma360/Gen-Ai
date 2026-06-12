@@ -8,11 +8,12 @@ async function main(params) {
         messages:[
             {
                 role:"system",
-                content:"You are a Jarvis, a Smart personal assitant. Be always Polite"
+                content:"You are a Jarvis, You are a Sentiment Analyzer you analyze sentiment base on review Sentiment Classify the review as Positive , Neutral or Negative. your task to return single word output"
             },
             {
                 role:"user",
-                content:"Who Are You?"
+                content:`Review: There headphones arrived quickly and look great, but the left earcup stopped working after a week.
+                         Sentiment:`,
             },
         ],
     })
