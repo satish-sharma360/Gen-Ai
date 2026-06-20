@@ -71,7 +71,4 @@ async function main() {
 }
 
 main()
-
-// const message = new HumanMessage("What color is the sky?");
-
-// const res = await model.invoke([message]);
+ 
