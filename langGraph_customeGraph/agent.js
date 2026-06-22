@@ -31,7 +31,7 @@ const llm = new ChatGroq({
 // Memory
 // ===============================
 
-// const checkpointer = new MemorySaver()
+const checkpointer = new MemorySaver()
 
 
 
@@ -109,13 +109,14 @@ const graph = new StateGraph(MessagesAnnotation)
 // Compile Graph
 // ===============================
 
-const app = graph.compile()
-// const app = graph.compile({
-//     checkpointer
-// })
+// const app = graph.compile()
+const app = graph.compile({
+    checkpointer
+})
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 
 async function main() {
+    // const config = { configurable: { thread_id: "1" } }
     await printGraph(app)
 
     while (true) {
@@ -124,9 +125,10 @@ async function main() {
         if (question === 'bye') {
             break;
         }
-        const response = await app.invoke({
-            messages: [{ role: 'human', content: question }]
-        })
+        const response = await app.invoke(
+            { messages: [{ role: "human", content: question }] },
+            { configurable: { thread_id: "1" } }
+        );
 
 
         const messages = response.messages;
