@@ -2,11 +2,13 @@ import { ChatGroq } from "@langchain/groq"
 import { MemorySaver, START } from '@langchain/langgraph'
 import { createAgent } from 'langchain'
 import { TavilySearch } from "@langchain/tavily";
-import { StateGraph ,MessagesAnnotation} from "@langchain/langgraph";
+import { StateGraph, MessagesAnnotation } from "@langchain/langgraph";
 import * as z from "zod";
 import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { tool } from "@langchain/core/tools";
 import { printGraph } from "./utils.js";
+import readline from 'node:readline/promises'
+import { stdin } from "node:process";
 
 /**
  * 1. Bring in LLM
@@ -21,8 +23,8 @@ import { printGraph } from "./utils.js";
 // ===============================
 
 const llm = new ChatGroq({
-    model:"llama-3.3-70b-versatile",
-    temperature:0
+    model: "llama-3.3-70b-versatile",
+    temperature: 0
 })
 
 // ===============================
@@ -81,7 +83,7 @@ async function callModel(state) {
     return { messages: [response] };
 }
 
-function whereToGo(state){
+function whereToGo(state) {
     // check the previous ai message if tool call, return "tools"
     // else return "__end__"
     // console.log("message" , state.messages)
@@ -97,11 +99,11 @@ function whereToGo(state){
 // Graph
 // ===============================
 const graph = new StateGraph(MessagesAnnotation)
-.addNode("agent",callModel)
-.addNode("tools",toolNode)
-.addEdge("__start__","agent")
-.addEdge("tools","agent")
-.addConditionalEdges("agent" , whereToGo)
+    .addNode("agent", callModel)
+    .addNode("tools", toolNode)
+    .addEdge("__start__", "agent")
+    .addEdge("tools", "agent")
+    .addConditionalEdges("agent", whereToGo)
 
 // ===============================
 // Compile Graph
@@ -111,18 +113,28 @@ const app = graph.compile()
 // const app = graph.compile({
 //     checkpointer
 // })
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 
-async function  main() {
+async function main() {
     await printGraph(app)
-    const response = await app.invoke({
-        messages:[{role:'human', content:'What is the weather in Delhi?'}]
-    })
+
+    while (true) {
+        const question = await rl.question("Ask --> ")
+
+        if (question === 'bye') {
+            break;
+        }
+        const response = await app.invoke({
+            messages: [{ role: 'human', content: question }]
+        })
 
 
-    const messages = response.messages;
-    const final = messages[messages.length - 1];
+        const messages = response.messages;
+        const final = messages[messages.length - 1];
 
-    console.log("Ai --> ", final.content)
+        console.log("Ai --> ", final.content)
+    }
+    rl.close()
 }
 
 main()
